@@ -4,20 +4,20 @@ n = 9;
 SquareLowerMatrix = zeros(n, n); % for testing
 %RestrictedSquareMatrix = zeros(n, 3); % input for function with restricted storage
 
-minaRand = -0.0000000000000001;
+minRand = -0.0000000000000001;
 maxRand = 0.000000000000000001;
 
 % generate random tridiagonal lower matrix, we'll use it to generate
 % symmetric pentadiag matrix
 for i = 1 : n
-    SquareLowerMatrix(i, i) = minaRand + rand() * (maxRand - minaRand);
+    SquareLowerMatrix(i, i) = minRand + rand() * (maxRand - minRand);
 
     % here we're putting values below the diagonal, if we can
     if i < n
-        SquareLowerMatrix(i + 1, i) = minaRand + rand() * (maxRand - minaRand);
+        SquareLowerMatrix(i + 1, i) = minRand + rand() * (maxRand - minRand);
     end
     if i < n - 1
-        SquareLowerMatrix(i + 2, i) = minaRand + rand() * (maxRand - minaRand);
+        SquareLowerMatrix(i + 2, i) = minRand + rand() * (maxRand - minRand);
     end
 end
 
