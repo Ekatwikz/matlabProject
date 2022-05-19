@@ -1,25 +1,39 @@
-function [ determinantPercentError, lowerMatrixPercentError ] = randomCholTest (matrixSize, minRand, maxRand)
+function [ determinantPercentError, lowerMatrixPercentError, randomMatrixGenerationAttempts ] = randomCholTest (matrixSize, minRand, maxRand)
     SquareLowerMatrix = zeros(matrixSize); % for testing
     
-    % generate random tridiagonal lower matrix, we'll use it to generate
-    % symmetric pentadiag matrix
-    for i = 1 : matrixSize
-        SquareLowerMatrix(i, i) = minRand + rand() * (maxRand - minRand);
-    
-        % here we're putting values below the diagonal, if we can
-        if i < matrixSize
-            SquareLowerMatrix(i + 1, i) = minRand + rand() * (maxRand - minRand);
+    randomMatrixGenerationAttempts = 0;
+
+    % so generating the random matrix still occasionally fails because it
+    % seems we're generating semi-definite matrices, so we simply retry
+    % if we fail to make a good random matrix
+    while 1
+        randomMatrixGenerationAttempts = randomMatrixGenerationAttempts + 1;
+        % generate random tridiagonal lower matrix, we'll use it to generate
+        % symmetric pentadiag matrix
+        for i = 1 : matrixSize
+            SquareLowerMatrix(i, i) = minRand + rand() * (maxRand - minRand);
+        
+            % here we're putting values below the diagonal, if we can
+            if i < matrixSize
+                SquareLowerMatrix(i + 1, i) = minRand + rand() * (maxRand - minRand);
+            end
+            if i < matrixSize - 1
+                SquareLowerMatrix(i + 2, i) = minRand + rand() * (maxRand - minRand);
+            end
         end
-        if i < matrixSize - 1
-            SquareLowerMatrix(i + 2, i) = minRand + rand() * (maxRand - minRand);
+        
+        % generate pentadiagonal from lower
+        SquareMatrix = SquareLowerMatrix * transpose(SquareLowerMatrix);
+        
+        try
+            % this is important because chol(L * L^T) ~= L^T
+            % (at least not always)
+            SquareLowerMatrix = transpose(chol(SquareMatrix));
+            break;
+        catch
+            continue;
         end
     end
-    
-    % generate pentadiagonal from lower
-    SquareMatrix = SquareLowerMatrix * transpose(SquareLowerMatrix);
-    
-    % this is important because (TODO, think about this lol)
-    SquareLowerMatrix = transpose(chol(SquareMatrix));
     
     % convert the square pentadiagonal matrix to restricted storage representation with only 3
     % diagonals stored (due to symmetry and sparseness)
