@@ -1,43 +1,16 @@
 format short;
 
-n = 9;
-SquareLowerMatrix = zeros(n, n); % for testing
-%RestrictedSquareMatrix = zeros(n, 3); % input for function with restricted storage
+fprintf("Test 1:\n");
+[ averagePercentDeterminantError, averagePercentLowerMatrixPercentError ] = massRandomCholTest(3, -1, 1, 1000)
 
-minRand = -0.0000000000000001;
-maxRand = 0.000000000000000001;
+fprintf("Test 2:\n");
+[ averagePercentDeterminantError, averagePercentLowerMatrixPercentError ] = massRandomCholTest(10, -100, -50, 1000)
 
-% generate random tridiagonal lower matrix, we'll use it to generate
-% symmetric pentadiag matrix
-for i = 1 : n
-    SquareLowerMatrix(i, i) = minRand + rand() * (maxRand - minRand);
+fprintf("Test 3:\n");
+[ averagePercentDeterminantError, averagePercentLowerMatrixPercentError ] = massRandomCholTest(4, 1000, 5000, 1000)
 
-    % here we're putting values below the diagonal, if we can
-    if i < n
-        SquareLowerMatrix(i + 1, i) = minRand + rand() * (maxRand - minRand);
-    end
-    if i < n - 1
-        SquareLowerMatrix(i + 2, i) = minRand + rand() * (maxRand - minRand);
-    end
-end
+fprintf("Test 4:\n");
+[ averagePercentDeterminantError, averagePercentLowerMatrixPercentError ] = massRandomCholTest(7, -0.0000000000000001, 0.0000000000000001, 1000)
 
-% generate pentadiagonal from lower
-SquareMatrix = SquareLowerMatrix * transpose(SquareLowerMatrix);
-
-% this is important because (todo, think about this lol)
-SquareLowerMatrix = transpose(chol(SquareMatrix));
-
-% convert the square pentadiagonal matrix to restricted storage representation with only 3
-% diagonals stored (due to symmetry and sparseness)
-% then calculate the cholesky
-[ restrictedLowerMatrix, determinant ] = restrictedCholeskyAndDeterminant(squareMatrixToRestricted(SquareMatrix));
-
-% calculate % error in determinant
-determinantPercentError = 100 * (determinant - det(SquareMatrix) ) / det(SquareMatrix)
-
-% calculate % error of matrix values in decomposition
-lowerMatrixPercentError = 100 * (restrictedLowerMatrixToSquare(restrictedLowerMatrix) - SquareLowerMatrix) ./ SquareLowerMatrix;
-
-% we replace NaNs (0 / 0 these were outside the diagonal we calculated)
-% with 0s
-lowerMatrixPercentError(isnan(lowerMatrixPercentError)) = 0
+fprintf("Test 5:\n");
+%[ averagePercentDeterminantError, averagePercentLowerMatrixPercentError ] = massRandomCholTest(15, -50, 50, 1000)
