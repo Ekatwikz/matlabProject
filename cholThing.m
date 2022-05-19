@@ -1,40 +1,37 @@
-format short;
+A = [0 0 10;
+     0 4  5;
+     1 3 10;
+     2 3  4;
+     1 2  2];
 
-A = [10 4 1 0 0;
-      4 5 3 2 0;
-      1 3 10 3 1;
-      0 2 3 4 2;
-      0 0 1 2 2];
-
-[~, n] = size(A);
-LowerMatrix = zeros(n); % lower matrix
+[n, ~] = size(A);
+LowerMatrix = zeros(n, 3); % lower matrix
 matrixDet = 1;
 
-%from chol-banach algo on wikipedia:
-% for each row...
 for i = 1 : n
-    % ... and for each column,
-    % we can skip every value that's too far below the diagonal because
-    % it'll be zero (TODO: prove)
-    for j = max(i - 2 , 1) : i
-        sum = 0;
+    for j = max(4 - i, 1) : 3
+        %fprintf("L_(%d,%d):%.3f\tL_(%d,%d):%.3f\n", i, k, LowerMatrix(i, k), j, k, LowerMatrix(j, k));
+        %k = max(4 - i, 1);
+        if j == 1 || i == 1 || i == 2 && j == 2
+            % zero dependencies
+            sum = 0;
+        elseif j == 2 || i == 2 && j == 3
+            sum = LowerMatrix(i, j - 1) * LowerMatrix(i - 1, j);
+        elseif j == 3
+            % depends on this row
+            sum = LowerMatrix(i, 1).^2 + LowerMatrix(i, 2).^2;
+        end
+        fprintf("i:%d j:%d sum:%d\n", i, j, sum);
 
-        % we also don't need to sum from too far above
-        for k = max(j - 2, 1) : j - 1
-            %fprintf("L_(%d,%d):%.3f\tL_(%d,%d):%.3f\n", i, k, LowerMatrix(i, k), j, k, LowerMatrix(j, k));
-            sum = sum + LowerMatrix(i, k) * LowerMatrix(j, k);
+        if i == 3 % if we're on the diagonal
+            LowerMatrix(i, j) = sqrt(A(i, j) - sum);
+            matrixDet = matrixDet * LowerMatrix(i, j).^2;
+        else % non-diagonal
+            LowerMatrix(i, j) = 1.0 / LowerMatrix(j , 3) * (A(i, j) - sum);
         end
 
         %fprintf("A(%d,%d):%.3f\n\n", i, j, A(i, j));
-        if i == j
-            LowerMatrix(i, i) = sqrt(A(i, i) - sum);
-            matrixDet = matrixDet * LowerMatrix(i, i).^2;
-        else
-            LowerMatrix(i, j) = 1.0 / LowerMatrix(j , j) * (A(i, j) - sum);
-        end
     end
 end
 
-LLTerror = LowerMatrix * transpose(LowerMatrix) - A;
-DeterminantError = det(A) - matrixDet;
-LowerMatrix;
+LowerMatrix
